@@ -1,0 +1,51 @@
+// SPDX-License-Identifier: GPL 3.0
+pragma solidity ^0.8.7;
+
+contract Ecommerece {
+
+    struct product{
+            string  Title;
+            string  desc;
+            address payable seller;
+            uint256 productid;
+            uint256 price;
+            address buyer;
+            bool delivered;
+    }
+uint256 counter =1;
+Product[] public products;
+event register(string title, uint256 productid, address seller);
+event brought(uint256 productid, address buyer);
+event delivered(uint productid);
+
+function registerproduct(string memory _name, string memory _desc, uint256 _price) public 
+    require (price>0, "price can't be zero");
+ 
+Product memory tempProduct;
+        tempProduct.Title = _name; 
+        tempProduct.desc = _desc;
+        tempProduct.price =_price* 10**18;
+        tempProduct.seller= payable(msg.sender);
+        tempProduct.productid=counter;
+        products.push[tempProduct];
+        counter++;
+emit register(_name, tempProduct.productid, msg.sender);
+} 
+function buy(uint256 _productid) payable public {
+require( products[productid-1].price==msg.value, "Pay the exact amount");
+require(products[productid-1]).seller!= msg.sender, "seller cannot be the buyer");
+
+        products[productid-1].buyer=msg.sender;
+emit brought(_productid, msg.sender);
+}
+
+function deliver(uint _productid) public {
+require(products[productid-1].buyer==msg.sender, "Only buyer can confirm it");
+products[productid-1].delivered= true;
+products[productid-1].seller.transfer(products[productid-1].price);
+emit delivered(_productid);
+}
+
+}
+
+
