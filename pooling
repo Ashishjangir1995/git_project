@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+
+contract Pooling{
+    
+        ERC721 NFT;
+    constructor ( address NFTAddress)  {
+        
+        NFT = ERC721(NFTAddress);  
+    }
+
+  event registerDepositer(  string _owner ,  uint _NFTId , uint _blocktimestamp , uint _price   ) ;//defined an event to provide details of owner of NFT
+    
+struct depositer{// structure will take the values related to owner of NFT
+string owner;
+uint nftid;
+uint nftRewardPoint;
+bool nftRegistered;
+uint timeStampnftRegister;
+uint priceOfNft;
+}
+mapping (uint=>depositer) depositerMap;// mapping with NFT-ID
+
+uint NumberOfDays=0;
+uint time = 0  ;
+
+function deposite(string memory _owner, uint _nftid, uint _price)public{      //function is create to deposite the NFT
+  require(msg.sender == NFT.ownerOf(_nftid),"Only owners can change this status");
+    require(depositerMap[_nftid].nftRegistered!= true);
+    depositerMap[_nftid].owner=_owner;
+    depositerMap[_nftid].nftid=_nftid;
+    depositerMap[_nftid].timeStampnftRegister=block.timestamp;
+    depositerMap[_nftid].priceOfNft=_price;
+    depositerMap[_nftid].nftRegistered= true;
+    depositerMap[_nftid].nftRewardPoint = 0 ; 
+ 
+    emit registerDepositer ( _owner , _nftid , block.timestamp , _price ) ; //emitted the event as mentioned abut
+}
+//showing the details of owner of the NFT
+function getDetails(uint _X) public view returns(string memory, uint, uint, uint, bool){
+   return (depositerMap[_X].owner,
+    depositerMap[_X].nftid,
+    depositerMap[_X].timeStampnftRegister,//store the time of deployment of NFT
+    depositerMap[_X].priceOfNft,
+    depositerMap[_X].nftRegistered);
+
+}
+
+    function Withdraw(uint256 _tokenId) public {
+        require(msg.sender == NFT.ownerOf(_tokenId),"Only owners can change this status");
+        require(block.timestamp>= depositerMap[_tokenId].timeStampnftRegister + 60 seconds, "nft is not under auction");// timestamp condition added to restrict auction before 30 days
+       
+        depositerMap[_tokenId].nftRegistered=false;
+
+        NumberOfDays= ((block.timestamp-depositerMap[_tokenId].timeStampnftRegister ))   ; // Number of days calculated
+
+        time = (NumberOfDays) ;  // time in year
+
+        depositerMap[_tokenId].nftRewardPoint = ((depositerMap[_tokenId].priceOfNft*15*time) / 100) ; // total interst in form of reward
+    }
+
+function payment(uint _tokenId) public view returns(uint256){
+         return  depositerMap[_tokenId].nftRewardPoint;
+
+}
+
+
+function timeperiod()public  view returns(uint){
+return block.timestamp ;
+
+
+}
+
+function getTime () public view  returns(uint , uint ){
+       
+        return   ( NumberOfDays  , block.timestamp ) ;
+    }
+
+
+
+
+}
