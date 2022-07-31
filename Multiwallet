@@ -1,0 +1,87 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.7;
+
+
+contract multisigwallet{
+    event deposite(address indexed sender, uint amount);
+    event submit(uint indexed txnId);
+    event Approve(address indexed to);
+    event Revoke();
+    event Execute ();
+
+address[] public owner;
+mapping (address=>bool) public isOwner;
+uint public required;
+
+struct Transaction{
+    address to;
+    uint value;
+    bytes data;
+    bool execute;
+}
+
+Transaction[] public Transactions;
+mapping(uint=>mapping(address=>bool)) public Approves;
+
+constructor (address[] memory _owner, uint _required){
+
+    require (owner.length>0, "Owner is required");
+    require (_required>0 && _required <= owner.length, "invalid number of owners");
+    for (uint i; i<_owner.length; i++){
+        address owner=_owner[i];
+        require(owner!= address(0),"Invalid owner");
+        require(!isOwner[owner], "Owner is not unique");
+        isOwner[owner]=true;
+        owner.push(owner);
+
+    }
+
+
+ required =_required;
+
+}
+        receive() external payable{
+            emit deposite(msg.sender, msg.value);
+        }
+
+function submit(address _to, uint _value, bytes calldata _data) external onlyOwner{
+    Transactions.push(Transaction({
+        to:_to,
+        value: _value,
+        data:_data,
+        executed: false
+
+    }));
+
+emit submit(Transactions.length-1);
+
+}
+
+function approve(uint _txId) external onlyOwner txExits(_txId) notApproved(_txId) notExecuted(_txId){
+
+            approved[_txId][msg.sender]= true;
+            emit Approve(msg.sender, _txId);
+
+}
+
+function getApprovalCount(uint _txId) public view returns(uint count){
+        for(uint i; i<owners.length; i++){
+            if(Approved[-txnId][owner[i]])
+            count+=1; 
+
+        }
+
+function Execute(uint _txId) external ntExecuted(_txId){
+        require(_getApprovalCount(_txId)>= required, "Approval Requried");
+        Transaction storage transaction=transactions[_txnId];
+        transaction.executed= true;
+        transaction.to.call(value)
+
+}
+
+
+}
+
+
+
+}
